@@ -1,0 +1,29 @@
+module MEMORY_CONTROL(x,y,rden,addr,tens,ones);
+
+input [8:0] x;
+input [9:0] y;
+
+output tens;
+output ones;
+output rden;
+output [13:0] addr;
+
+wire x10,y10,x1,y1;
+
+assign x10 = (x>=0)&&(x<=139) ? 1 : 0;
+assign y10 = (y>=0)&&(y<=69) ? 1 : 0; 
+assign x1 = ((x-0)>=0)&&((x-0)<=139) ? 1 : 0; // basically x1=x10
+assign y1 = ((y-69)-(20)>=0)&&((y-69)-(20)<=69) ? 1 : 0;  //interval 20
+
+assign rden = ((x10==1)&&(y10==1)) || ((x1==1)&&(y1==1)) ? 1 : 0;
+//Front ground -> rden == 1 , Back Ground -> rden == 0
+
+//change start coordinate (@1,@2) ->  x-@1 , y-@2 
+
+assign addr = (rden&&y1) ? (70*(x-0) + (y-69)-(20)) : (70*x + y);  //default start doordinate (0,0)
+
+
+assign tens = (rden&&y10) ? 1 : 0;
+assign ones = (rden&&y1) ? 1 : 0;
+
+endmodule
