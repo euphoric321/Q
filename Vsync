@@ -1,0 +1,48 @@
+module Vsync(iRSTn, iCLK, iEN, opulse, x);
+
+parameter n = 10;
+parameter k = 525; //
+
+
+input iRSTn, iCLK, iEN;
+output opulse;
+output [8:0] x;
+
+wire oEN;
+reg [n-1:0] oCNT;
+
+
+assign opulse = (oCNT >= 2)? 1 : 0 ;
+
+assign oEN = ((oCNT == k-1)&&(iEN == 1))? 1 : 0 ;
+
+assign x = ((oCNT>=35)&&(oCNT<=514)) ? oCNT-35 : 0;
+
+
+always @ (posedge iCLK or negedge iRSTn)
+begin
+      if(~iRSTn)
+      begin
+         oCNT <= 0;
+      end       
+      
+      else if(iEN)
+      begin
+            if(oCNT == k-1)
+            begin
+               oCNT <= 0;
+            end
+            
+            else
+            begin
+               oCNT <= oCNT +1;
+            end
+      end
+      
+      else
+      begin
+            oCNT <= oCNT;
+      end
+end
+
+endmodule
