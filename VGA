@@ -1,0 +1,54 @@
+module VGA(CLOCK_50,SW,VGA_HS,VGA_VS,VGA_R,VGA_G,VGA_B,CLOCK25M);
+
+input CLOCK_50;
+input [9:0] SW;
+
+output VGA_HS,VGA_VS,CLOCK25M;
+output [3:0] VGA_R,VGA_G,VGA_B;
+
+wire CLOCK25M,vsEN;
+wire number_sel;
+wire rden;
+wire tens,ones;
+wire [13:0] addr;
+wire [9:0] q;
+wire [3:0] color;
+wire [8:0] x;
+wire [9:0] y;
+
+
+PLL1 //50MHz to 25MHz
+PLL00(.inclk0(CLOCK_50),.c0(CLOCK25M));
+
+
+//sync test -> 50M
+Hsync
+Hsync0(.iCLK(CLOCK25M),.iRSTn(1),.iEN(1),.oEN(vsEN),.opulse(VGA_HS),.y(y));
+
+Vsync
+Vsync0(.iCLK(CLOCK25M),.iRSTn(1),.iEN(vsEN),.opulse(VGA_VS),.x(x));
+
+
+//MC
+MEMORY_CONTROL
+MEMORY_CONTROLLER(.x(x),.y(y),.rden(rden),.addr(addr),.tens(tens),.ones(ones));
+
+
+//ROM
+ROM
+ROM0(.address(addr),.clock(CLOCK25M),.rden(rden),.q(q));
+
+
+//NUMBER SEL
+NUMBER_MUX
+NUMBER_MUX0(.muxout(q),.SW(SW[4:0]),.number(number_sel),.tens(tens),.ones(ones),.CLK(CLOCK25M));
+
+//Light
+assign color = (number_sel == 1) ? 4'b1111 : 4'b0000;
+
+assign VGA_R = (SW[7] == 1'b1) ? color[3:0] : 4'b0000;
+assign VGA_G = (SW[6] == 1'b1) ? color[3:0] : 4'b0000;
+assign VGA_B = (SW[5] == 1'b1) ? color[3:0] : 4'b0000;
+
+
+endmodule
