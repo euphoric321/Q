@@ -1,0 +1,49 @@
+module Hsync(iRSTn, iCLK, iEN, oEN, opulse, y);
+
+parameter n = 10;
+parameter k = 800;
+
+
+input iRSTn, iCLK, iEN;
+
+output oEN,opulse;
+output [9:0] y;
+
+
+reg [n-1:0] oCNT;
+
+
+assign opulse = ((oCNT >= 96)&&(iEN == 1))? 1 : 0 ;
+//0~96 sync, 97~144 back porch, 145~784 display , 785~800 front porch
+
+assign oEN = ((oCNT == k-1)&&(iEN == 1))? 1 : 0 ;
+
+assign y = ((oCNT>=144)&&(oCNT<=783)) ? oCNT-144 : 0;
+
+always @ (posedge iCLK or negedge iRSTn)
+begin
+      if(~iRSTn)
+      begin
+         oCNT <= 0;
+      end       
+      
+      else if(iEN)
+      begin
+            if(oCNT == k-1)
+            begin
+               oCNT <= 0;
+            end
+            
+            else
+            begin
+               oCNT <= oCNT +1;
+            end
+      end
+      
+      else
+      begin
+            oCNT <= oCNT;
+      end
+end
+
+endmodule
