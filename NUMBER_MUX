@@ -1,0 +1,54 @@
+module NUMBER_MUX(muxout,SW,number,tens,ones,CLK);
+
+input [9:0] muxout;
+input [4:0] SW;
+input CLK;
+input tens, ones;
+
+reg number1,number10;
+output number;
+
+always@(posedge CLK)
+begin
+	if (tens&&SW[4]) // position tens and switch5 on
+		begin
+			case(SW[3:0]) // number
+				4'b0000: number10 = muxout[9];
+				4'b0001: number10 = muxout[8];
+				4'b0010: number10 = muxout[7];
+    			4'b0011: number10 = muxout[6];
+ 				4'b0100: number10 = muxout[5];
+   			4'b0101: number10 = muxout[4];
+				4'b0110: number10 = muxout[3];
+				4'b0111: number10 = muxout[2];
+  	      	4'b1000: number10 = muxout[1];
+				4'b1001: number10 = muxout[0];
+				default: number10 = muxout[9];
+			endcase
+		end
+	else if (ones&&~SW[4]) // position ones and switch5 off
+		begin
+			case(SW[3:0]) // number
+				4'b0000: number1 = muxout[9];
+				4'b0001: number1 = muxout[8];
+				4'b0010: number1 = muxout[7];
+				4'b0011: number1 = muxout[6];
+				4'b0100: number1 = muxout[5];
+   			4'b0101: number1 = muxout[4];
+				4'b0110: number1 = muxout[3];
+				4'b0111: number1 = muxout[2];
+				4'b1000: number1 = muxout[1];
+				4'b1001: number1 = muxout[0];
+				default: number1 = muxout[9];
+			endcase
+		end
+ else // keep
+		begin
+			number1 <= number1;
+			number10 <= number10;
+		end
+end
+
+assign number = (tens) ? number10 : number1; // position tens -> number10 display // ones -> number1 display
+					 
+endmodule
